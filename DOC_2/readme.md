@@ -1,1 +1,1 @@
-Proyecto ecotech ------- Diego Florez
+Proyecto ecotech 
