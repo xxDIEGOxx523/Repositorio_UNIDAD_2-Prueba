@@ -1,13 +1,17 @@
 from dominio.empleado import Empleado
-from dominio.desarrollo import Desarrollo  # type: ignore # Assuming Desarrollo is the correct class to import
+from dominio.departamento import Departamento
+
 
 empleado = Empleado(
     nombre="Ana Torres",
     correo="ana.torres@ecotech.cl"
 )
 
-desarrollo = Desarrollo()  # Create an instance of Desarrollo
-desarrollo.agregar_empleado(empleado)  # Use empleado instead of ana
-print(desarrollo.cantidad_empleados())
-for empleado in desarrollo.empleados:
+departamento = Departamento("Desarrollo")
+
+departamento.agregar_empleado(empleado)
+
+print(departamento.cantidad_empleados())
+
+for empleado in departamento.empleados:
     print(empleado.mostrar_datos())
