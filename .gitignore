@@ -6,3 +6,7 @@
 
 # Archivos con credenciales y variables de entorno secretas
 .env
+
+__pycache__/
+*.pyc
+.env
