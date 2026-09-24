@@ -1,6 +1,15 @@
+from .empleado import Empleado
+
+
 class Notificacion:
-    def __init__(self, mensaje, tipo="General"):
+    def __init__(
+        self,
+        mensaje: str,
+        empleado: Empleado,
+        tipo: str = "General"
+    ):
         self.mensaje = mensaje
+        self.empleado = empleado
         self.tipo = tipo
         self._leida = False
 
@@ -12,4 +21,10 @@ class Notificacion:
 
     def mostrar(self):
         estado = "Leída" if self._leida else "No leída"
-        return f"[{self.tipo}] {self.mensaje} - {estado}"
+
+        return (
+            f"Notificación para {self.empleado.nombre}: "
+            f"{self.mensaje} | "
+            f"Tipo: {self.tipo} | "
+            f"Estado: {estado}"
+        )
