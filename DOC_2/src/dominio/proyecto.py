@@ -1,20 +1,15 @@
-class Empleado:
-    def __init__(self, nombre, id_empleado):
+from .empleado import Empleado
+
+
+class Proyecto:
+    def __init__(self, nombre: str):
         self.nombre = nombre
-        self.id_empleado = id_empleado
-        self.registros_tiempo = []
+        self._empleados = []
 
-    def agregar_registro_tiempo(self, registro):
-        self.registros_tiempo.append(registro)
+    def agregar_empleado(self, empleado: Empleado):
+        if empleado not in self._empleados:
+            self._empleados.append(empleado)
 
-
-class RegistroTiempo:
-    def __init__(self, fecha, horas_trabajadas):
-        self.fecha = fecha
-        self.horas_trabajadas = horas_trabajadas
-
-
-# Ejemplo de uso
-empleado1 = Empleado("Juan Pérez", 1)
-registro1 = RegistroTiempo("2023-10-01", 8)
-empleado1.agregar_registro_tiempo(registro1)
+    @property
+    def empleados(self):
+        return tuple(self._empleados)
