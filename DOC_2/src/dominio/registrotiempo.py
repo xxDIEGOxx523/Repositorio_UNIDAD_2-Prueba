@@ -1,28 +1,26 @@
-class Departamento:
-    def __init__(self, nombre):
-        self.nombre = nombre
+from .empleado import Empleado
+from .proyecto import Proyecto
 
-class Empleado:
-    def __init__(self, nombre, departamento):
-        self.nombre = nombre
-        self.departamento = departamento
-
-class Proyecto:
-    def __init__(self, nombre, empleado):
-        self.nombre = nombre
-        self.empleado = empleado
 
 class RegistroTiempo:
     def __init__(self):
-        self.registros = []
+        self._registros = []
 
-    def agregar_registro(self, empleado, proyecto, horas):
-        self.registros.append({
-            'empleado': empleado.nombre,
-            'proyecto': proyecto.nombre,
-            'horas': horas
+    def agregar_registro(self, empleado: Empleado, proyecto: Proyecto, horas: int):
+        self._registros.append({
+            "empleado": empleado,
+            "proyecto": proyecto,
+            "horas": horas
         })
 
+    @property
+    def registros(self):
+        return tuple(self._registros)
+
     def mostrar_registros(self):
-        for registro in self.registros:
-            print(f"Empleado: {registro['empleado']}, Proyecto: {registro['proyecto']}, Horas: {registro['horas']}")
+        for registro in self._registros:
+            print(
+                f"Empleado: {registro['empleado'].nombre}, "
+                f"Proyecto: {registro['proyecto'].nombre}, "
+                f"Horas: {registro['horas']}"
+            )
