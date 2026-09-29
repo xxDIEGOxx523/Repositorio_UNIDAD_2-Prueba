@@ -1,8 +1,8 @@
 from dominio.empleado import Empleado
 from dominio.departamento import Departamento
+from persistencia.empleado_dao import EmpleadoDAO
 
-
-empleado = Empleado(
+"""empleado = Empleado(
     nombre="Ana Torres",
     correo="ana.torres@ecotech.cl"
 )
@@ -26,5 +26,20 @@ print("Antes:", empleado.id)
 # None
 EmpleadoDAO.insertar(empleado)
 print("Después:", empleado.id)
-# id generado por la BD
+# id generado por la BD"""
+
+
+empleado = Empleado(
+nombre="Sergio Torres",
+correo="sergio.torres@ecotech.cl"
+)
+EmpleadoDAO.insertar(empleado)
+
+encontrado = EmpleadoDAO.buscar_por_id(empleado.id)
+print("Encontrado:", encontrado)
+print("Listado:")
+for item in EmpleadoDAO.listar():
+    print(item)
+
+
 
