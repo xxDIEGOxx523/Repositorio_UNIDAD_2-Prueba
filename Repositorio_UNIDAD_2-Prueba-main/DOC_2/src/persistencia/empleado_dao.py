@@ -1,85 +1,74 @@
-from persistencia.conexion import abrir_conexion, obtener_motor, marcador_sql
-from dominio.empleado import Empleado
+from dominio.proyecto import Proyecto
+from persistencia.conexion import abrir_conexion
 
+class ProyectoDAO:
 
-class EmpleadoDAO:
+    def guardar(self, proyecto):
+        con = abrir_conexion()
+        cur = con.cursor()
+        try:
+            cur.execute("INSERT INTO proyecto (nombre) VALUES (?)", (proyecto.nombre,))
+            con.commit()
+            proyecto.id = cur.lastrowid
+            return proyecto
+        except:
+            con.rollback()
+            raise
+        finally:
+            con.close()
 
-    @staticmethod
-    def insertar(empleado):
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        marcador = "?" if obtener_motor() == "sqlite" else "%s"
-        sql = f"""
-            INSERT INTO empleado (nombre, correo)
-            VALUES ({marcador}, {marcador})
-        """
-        cursor.execute(sql, (empleado.nombre, empleado.correo))
-        empleado.id = cursor.lastrowid
-        conexion.commit()
-        conexion.close()
-        return empleado
-    
-    @staticmethod
-    def buscar_por_id(id_empleado):
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        marca = marcador_sql()
-        sql = f"""
-            SELECT id, nombre, correo
-            FROM empleado WHERE id = {marca}
-        """
-        cursor.execute(sql, (id_empleado,))
-        fila = cursor.fetchone()
-        conexion.close()
-        if fila is None:
-            return None
-        return EmpleadoDAO._fila_a_empleado(fila)
+    def buscar(self, id_proyecto):
+        con = abrir_conexion()
+        try:
+            cur = con.cursor()
+            cur.execute("SELECT id, nombre FROM proyecto WHERE id = ?", (id_proyecto,))
+            fila = cur.fetchone()
+            if fila is None:
+                return None
+            return Proyecto(id=fila[0], nombre=fila[1])
+        finally:
+            con.close()
 
-    @staticmethod
-    def listar():
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        cursor.execute("SELECT id, nombre, correo FROM empleado")
-        filas = cursor.fetchall()
-        conexion.close()
-        empleados = []
-        for fila in filas:
-            empleados.append(Empleado(id=fila[0], nombre=fila[1], correo=fila[2]))
-        return empleados
+    def listar(self):
+        con = abrir_conexion()
+        try:
+            cur = con.cursor()
+            cur.execute("SELECT id, nombre FROM proyecto")
+            filas = cur.fetchall()
+            lista = []
+            for fila in filas:
+                lista.append(Proyecto(id=fila[0], nombre=fila[1]))
+            return lista
+        finally:
+            con.close()
 
-    @staticmethod
-    def actualizar(empleado):
-        """Actualiza el nombre y correo de un empleado existente por su ID"""
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        marca = marcador_sql()
-        sql = f"""
-            UPDATE empleado 
-            SET nombre = {marca}, correo = {marca} 
-            WHERE id = {marca}
-        """
-        # Pasamos los nuevos datos y el ID al final para la condición WHERE
-        cursor.execute(sql, (empleado.nombre, empleado.correo, empleado.id))
-        conexion.commit()
-        conexion.close()
-        return empleado
+    def cambiar(self, proyecto):
+        con = abrir_conexion()
+        try:
+            cur = con.cursor()
+            cur.execute(
+                "UPDATE proyecto SET nombre = ? WHERE id = ?",
+                (proyecto.nombre, proyecto.id)
+            )
+            con.commit()
+            return cur.rowcount > 0
+        except:
+            con.rollback()
+            raise
+        finally:
+            con.close()
 
-    @staticmethod
-    def eliminar(id_empleado):
-        """Elimina un empleado de la base de datos usando su ID"""
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        marca = marcador_sql()
-        sql = f"DELETE FROM empleado WHERE id = {marca}"
-        cursor.execute(sql, (id_empleado,))
-        conexion.commit()
-        conexion.close()
-        return True
-
-    @staticmethod
-    def _fila_a_empleado(fila):
-        return Empleado(id=fila[0], nombre=fila[1], correo=fila[2])
-
-
+    def borrar(self, id_proyecto):
+        con = abrir_conexion()
+        try:
+            cur = con.cursor()
+            cur.execute("DELETE FROM proyecto WHERE id = ?", (id_proyecto,))
+            con.commit()
+            return cur.rowcount > 0
+        except:
+            con.rollback()
+            raise
+        finally:
+            con.close()
 
 
