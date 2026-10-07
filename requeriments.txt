@@ -1,0 +1,8 @@
+# Driver para conectar a MySQL
+PyMySQL==1.2.3
+
+# Manejo de variables de entorno (.env)
+python-dotenv==1.2.4
+
+# El ORM que te permitirá usar MySQL y SQLite con el mismo código
+SQLAlchemy==2.0.35
