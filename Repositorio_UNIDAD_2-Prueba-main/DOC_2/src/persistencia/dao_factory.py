@@ -1,28 +1,26 @@
-# Importaciones de tus DAOs de SQLite
-from .registro_tiempo_dao import SQLiteRegistroTiempoDAO
-from .empleado_dao import SQLiteEmpleadoDAO
-# (Importar de igual manera tus DAOs de Proyecto y Departamento)
+from .empleado_dao import EmpleadoDAO
+from .departamento_dao import DepartamentoDAO
+from .proyecto_dao import ProyectoDAO
+from .registro_tiempo_dao import RegistroTiempoDAO
 
-# Importaciones de tus DAOs de MySQL (Si ya creaste los archivos .py correspondientes)
-# from .mysql_daos import MySQLRegistroTiempoDAO, MySQLEmpleadoDAO
 
 class DAOFactory:
-    def __init__(self, motor: str, config: dict = None):
-        self.motor = motor.lower()
-        self.config = config
-        if self.motor == "mysql" and not config:
-            raise ValueError("Se requiere configuración de conexión para MySQL.")
+    """Fábrica de DAOs. El proyecto usa exclusivamente MySQL."""
 
-    def get_registro_tiempo_dao(self):
-        return SQLiteRegistroTiempoDAO() if self.motor == "sqlite" else MySQLRegistroTiempoDAO(self.config)
+    def __init__(self):
+        self._empleado_dao = EmpleadoDAO()
+        self._departamento_dao = DepartamentoDAO()
+        self._proyecto_dao = ProyectoDAO()
+        self._registro_tiempo_dao = RegistroTiempoDAO()
 
     def get_empleado_dao(self):
-        return SQLiteEmpleadoDAO() if self.motor == "sqlite" else MySQLEmpleadoDAO(self.config)
-
-    def get_proyecto_dao(self):
-        # Retorna la implementación según corresponda
-        pass
+        return self._empleado_dao
 
     def get_departamento_dao(self):
-        # Retorna la implementación según corresponda
-        pass
+        return self._departamento_dao
+
+    def get_proyecto_dao(self):
+        return self._proyecto_dao
+
+    def get_registro_tiempo_dao(self):
+        return self._registro_tiempo_dao

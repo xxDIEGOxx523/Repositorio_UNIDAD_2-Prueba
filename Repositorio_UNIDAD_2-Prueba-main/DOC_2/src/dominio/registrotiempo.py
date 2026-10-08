@@ -1,26 +1,25 @@
-from .empleado import Empleado
-from .proyecto import Proyecto
-
-
 class RegistroTiempo:
-    def __init__(self):
-        self._registros = []
+    def __init__(self, fecha, horas_trabajadas, descripcion_trabajo, id_empleado, id_proyecto, id_registro=None):
+        self.id_registro = id_registro
+        self.fecha = fecha
+        self.horas_trabajadas = horas_trabajadas
+        self.descripcion_trabajo = descripcion_trabajo
+        self.id_empleado = id_empleado
+        self.id_proyecto = id_proyecto
 
-    def agregar_registro(self, empleado: Empleado, proyecto: Proyecto, horas: int):
-        self._registros.append({
-            "empleado": empleado,
-            "proyecto": proyecto,
-            "horas": horas
-        })
+    def registrar_tiempo(self):
+        self.validar_registro()
+        return True
 
-    @property
-    def registros(self):
-        return tuple(self._registros)
+    def validar_registro(self):
+        if self.horas_trabajadas <= 0 or self.horas_trabajadas > 24:
+            raise ValueError("Las horas trabajadas deben estar entre 0 y 24.")
+        if not self.descripcion_trabajo.strip():
+            raise ValueError("La descripción del trabajo no puede estar vacía.")
+        return True
 
-    def mostrar_registros(self):
-        for registro in self._registros:
-            print(
-                f"Empleado: {registro['empleado'].nombre}, "
-                f"Proyecto: {registro['proyecto'].nombre}, "
-                f"Horas: {registro['horas']}"
-            )
+    def actualizar_registro(self, fecha, horas_trabajadas, descripcion_trabajo):
+        self.fecha = fecha
+        self.horas_trabajadas = horas_trabajadas
+        self.descripcion_trabajo = descripcion_trabajo
+        self.validar_registro()

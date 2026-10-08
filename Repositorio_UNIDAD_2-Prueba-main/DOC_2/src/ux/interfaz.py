@@ -1,5 +1,11 @@
+from datetime import date, datetime
 import sys
+
+from dominio.empleado import Empleado
+from dominio.departamento import Departamento
+from dominio.proyecto import Proyecto
 from dominio.registrotiempo import RegistroTiempo
+
 
 class TerminalInterface:
     def __init__(self, registro_dao, empleado_dao, proyecto_dao, departamento_dao):
@@ -9,69 +15,126 @@ class TerminalInterface:
         self.departamento_dao = departamento_dao
 
     def mostrar_menu(self):
-        print("\n" + "="*40)
-        print("      SISTEMA DE GESTIÓN GUBERNENTAL / ECOTECH")
-        print("="*40)
-        print(" 1. Registrar tiempo de empleado")
-        print(" 2. Mostrar todos los registros de tiempo")
-        print(" 3. Ver lista de Empleados")
-        print(" 4. Ver lista de Proyectos")
-        print(" 5. Salir del programa")
-        print("="*40)
+        print("\n=== ECOTECH SOLUTIONS ===")
+        print("1. Registrar empleado")
+        print("2. Listar empleados")
+        print("3. Registrar departamento")
+        print("4. Listar departamentos")
+        print("5. Registrar proyecto")
+        print("6. Listar proyectos")
+        print("7. Registrar tiempo")
+        print("8. Listar registros de tiempo")
+        print("9. Salir")
 
     def iniciar(self):
         while True:
             self.mostrar_menu()
-            opcion = input("Seleccione una opción (1-5): ").strip()
-            if opcion == "1":
-                self._solicitar_registro()
-            elif opcion == "2":
-                self._mostrar_listado_tiempos()
-            elif opcion == "3":
-                self._listar_entidad(self.empleado_dao, "EMPLEADOS")
-            elif opcion == "4":
-                self._listar_entidad(self.proyecto_dao, "PROYECTOS")
-            elif opcion == "5":
-                print("\nCerrando sistema de gestión. ¡Hasta luego!")
-                sys.exit()
-            else:
-                print("\n❌ Opción no válida. Intente nuevamente.")
+            opcion = input("Seleccione una opción: ").strip()
+            try:
+                acciones = {
+                    "1": self._registrar_empleado,
+                    "2": lambda: self._listar(self.empleado_dao, "EMPLEADOS"),
+                    "3": self._registrar_departamento,
+                    "4": lambda: self._listar(self.departamento_dao, "DEPARTAMENTOS"),
+                    "5": self._registrar_proyecto,
+                    "6": lambda: self._listar(self.proyecto_dao, "PROYECTOS"),
+                    "7": self._registrar_tiempo,
+                    "8": self._mostrar_listado_tiempos,
+                }
+                if opcion == "9":
+                    print("Sistema finalizado.")
+                    sys.exit()
+                accion = acciones.get(opcion)
+                if accion:
+                    accion()
+                else:
+                    print("Opción no válida.")
+            except Exception as e:
+                print(f"Error: {e}")
 
-    def _listar_entidad(self, dao, nombre_entidad: str):
-        print(f"\n--- LISTA DE {nombre_entidad} ---")
-        items = dao.obtener_todos()
-        if not items:
-            print("No hay registros disponibles.")
+    def _registrar_empleado(self):
+        print("\n--- NUEVO EMPLEADO ---")
+        empleado = Empleado(
+            input("Nombre: ").strip(),
+            input("Dirección: ").strip(),
+            input("Teléfono: ").strip(),
+            input("Correo: ").strip(),
+            self._pedir_fecha("Fecha de inicio (YYYY-MM-DD): "),
+            self._pedir_float("Salario: "),
+        )
+        self.empleado_dao.insertar(empleado)
+        print(f"Empleado registrado con ID {empleado.id_empleado}.")
+
+    def _registrar_departamento(self):
+        departamento = Departamento(input("Nombre del departamento: ").strip())
+        self.departamento_dao.insertar(departamento)
+        print(f"Departamento registrado con ID {departamento.id_departamento}.")
+
+    def _registrar_proyecto(self):
+        proyecto = Proyecto(
+            input("Nombre: ").strip(),
+            input("Descripción: ").strip(),
+            self._pedir_fecha("Fecha de inicio (YYYY-MM-DD): "),
+        )
+        self.proyecto_dao.insertar(proyecto)
+        print(f"Proyecto registrado con ID {proyecto.id_proyecto}.")
+
+    def _registrar_tiempo(self):
+        registro = RegistroTiempo(
+            self._pedir_fecha("Fecha (YYYY-MM-DD): "),
+            self._pedir_float("Horas trabajadas: "),
+            input("Descripción del trabajo: ").strip(),
+            self._pedir_int("ID empleado: "),
+            self._pedir_int("ID proyecto: "),
+        )
+        self.registro_dao.insertar(registro)
+        print(f"Registro de tiempo guardado con ID {registro.id_registro}.")
+
+    def _listar(self, dao, titulo):
+        print(f"\n--- {titulo} ---")
+        datos = dao.obtener_todos()
+        if not datos:
+            print("No hay registros.")
             return
-        for item in items:
-            print(f"ID: {item['id']} | Nombre: {item['nombre']}")
-
-    def _solicitar_registro(self):
-        print("\n--- NUEVO REGISTRO DE TIEMPO ---")
-        try:
-            id_empleado = int(input("ID del Empleado: "))
-            id_proyecto = int(input("ID del Proyecto: "))
-            horas = float(input("Cantidad de horas trabajadas: "))
-            
-            if horas <= 0 or horas > 24:
-                print("\n❌ Error: Las horas diarias deben estar entre 1 y 24.")
-                return
-
-            # Vinculación con tu clase de dominio existente
-            nuevo_registro = RegistroTiempo(id_empleado=id_empleado, id_proyecto=id_proyecto, horas=horas)
-            
-            if self.registro_dao.insertar(nuevo_registro):
-                print("\n✅ ¡Tiempo guardado exitosamente!")
-            else:
-                print("\n❌ No se pudo completar la persistencia.")
-        except ValueError:
-            print("\n❌ Error: Ingrese valores numéricos válidos.")
+        for dato in datos:
+            print(dato)
 
     def _mostrar_listado_tiempos(self):
-        print("\n--- HISTORIAL DE REGISTROS DE TIEMPO ---")
+        print("\n--- REGISTROS DE TIEMPO ---")
         registros = self.registro_dao.obtener_todos_con_detalles()
         if not registros:
-            print("No se encontraron registros de tiempo.")
+            print("No hay registros.")
             return
-        for reg in registros:
-            print(f"[{reg['fecha']}] Empleado: {reg['empleado']:15} | Proyecto: {reg['proyecto']:12} | Horas: {reg['horas']:.1f}")
+        for registro in registros:
+            print(
+                f"ID: {registro['id_registro']} | Fecha: {registro['fecha']} | "
+                f"Empleado: {registro['empleado']} | Proyecto: {registro['proyecto']} | "
+                f"Horas: {registro['horas']} | Descripción: {registro['descripcion']}"
+            )
+
+    @staticmethod
+    def _pedir_int(mensaje):
+        while True:
+            try:
+                return int(input(mensaje))
+            except ValueError:
+                print("Ingrese un número entero válido.")
+
+    @staticmethod
+    def _pedir_float(mensaje):
+        while True:
+            try:
+                valor = float(input(mensaje))
+                if valor < 0:
+                    raise ValueError
+                return valor
+            except ValueError:
+                print("Ingrese un número válido mayor o igual a 0.")
+
+    @staticmethod
+    def _pedir_fecha(mensaje):
+        while True:
+            try:
+                return datetime.strptime(input(mensaje).strip(), "%Y-%m-%d").date()
+            except ValueError:
+                print("Formato inválido. Use YYYY-MM-DD.")

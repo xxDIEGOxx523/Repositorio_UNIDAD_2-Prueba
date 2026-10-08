@@ -1,74 +1,98 @@
-from dominio.proyecto import Proyecto
 from persistencia.conexion import abrir_conexion
+from persistencia.interfaces_dao import IEmpleadoDAO
 
-class ProyectoDAO:
 
-    def guardar(self, proyecto):
-        con = abrir_conexion()
-        cur = con.cursor()
+class EmpleadoDAO(IEmpleadoDAO):
+    def insertar(self, empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
         try:
-            cur.execute("INSERT INTO proyecto (nombre) VALUES (?)", (proyecto.nombre,))
-            con.commit()
-            proyecto.id = cur.lastrowid
-            return proyecto
-        except:
-            con.rollback()
+            cursor.execute("""
+                INSERT INTO empleado
+                (nombre, direccion, telefono, correo, fecha_inicio_contrato, salario, id_departamento)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                empleado.nombre, empleado.direccion, empleado.telefono,
+                empleado.correo, empleado.fecha_inicio_contrato,
+                empleado.salario, empleado.id_departamento
+            ))
+            conexion.commit()
+            empleado.id_empleado = cursor.lastrowid
+            return empleado
+        except Exception:
+            conexion.rollback()
             raise
         finally:
-            con.close()
+            cursor.close()
+            conexion.close()
 
-    def buscar(self, id_proyecto):
-        con = abrir_conexion()
+    def obtener_por_id(self, id_empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
         try:
-            cur = con.cursor()
-            cur.execute("SELECT id, nombre FROM proyecto WHERE id = ?", (id_proyecto,))
-            fila = cur.fetchone()
-            if fila is None:
-                return None
-            return Proyecto(id=fila[0], nombre=fila[1])
+            cursor.execute("SELECT * FROM empleado WHERE id_empleado = %s", (id_empleado,))
+            fila = cursor.fetchone()
+            return self._fila_a_dict(fila) if fila else None
         finally:
-            con.close()
+            cursor.close()
+            conexion.close()
 
-    def listar(self):
-        con = abrir_conexion()
+    def obtener_todos(self):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
         try:
-            cur = con.cursor()
-            cur.execute("SELECT id, nombre FROM proyecto")
-            filas = cur.fetchall()
-            lista = []
-            for fila in filas:
-                lista.append(Proyecto(id=fila[0], nombre=fila[1]))
-            return lista
+            cursor.execute("SELECT * FROM empleado ORDER BY id_empleado")
+            return [self._fila_a_dict(fila) for fila in cursor.fetchall()]
         finally:
-            con.close()
+            cursor.close()
+            conexion.close()
 
-    def cambiar(self, proyecto):
-        con = abrir_conexion()
+    def actualizar(self, id_empleado, empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
         try:
-            cur = con.cursor()
-            cur.execute(
-                "UPDATE proyecto SET nombre = ? WHERE id = ?",
-                (proyecto.nombre, proyecto.id)
-            )
-            con.commit()
-            return cur.rowcount > 0
-        except:
-            con.rollback()
+            cursor.execute("""
+                UPDATE empleado
+                SET nombre=%s, direccion=%s, telefono=%s, correo=%s,
+                    fecha_inicio_contrato=%s, salario=%s, id_departamento=%s
+                WHERE id_empleado=%s
+            """, (
+                empleado.nombre, empleado.direccion, empleado.telefono,
+                empleado.correo, empleado.fecha_inicio_contrato,
+                empleado.salario, empleado.id_departamento, id_empleado
+            ))
+            conexion.commit()
+            return cursor.rowcount > 0
+        except Exception:
+            conexion.rollback()
             raise
         finally:
-            con.close()
+            cursor.close()
+            conexion.close()
 
-    def borrar(self, id_proyecto):
-        con = abrir_conexion()
+    def eliminar(self, id_empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
         try:
-            cur = con.cursor()
-            cur.execute("DELETE FROM proyecto WHERE id = ?", (id_proyecto,))
-            con.commit()
-            return cur.rowcount > 0
-        except:
-            con.rollback()
+            cursor.execute("DELETE FROM empleado WHERE id_empleado=%s", (id_empleado,))
+            conexion.commit()
+            return cursor.rowcount > 0
+        except Exception:
+            conexion.rollback()
             raise
         finally:
-            con.close()
+            cursor.close()
+            conexion.close()
 
-
+    @staticmethod
+    def _fila_a_dict(fila):
+        return {
+            "id_empleado": fila[0],
+            "nombre": fila[1],
+            "direccion": fila[2],
+            "telefono": fila[3],
+            "correo": fila[4],
+            "fecha_inicio_contrato": fila[5],
+            "salario": fila[6],
+            "id_departamento": fila[7],
+        }

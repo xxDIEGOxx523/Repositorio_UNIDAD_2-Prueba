@@ -1,16 +1,19 @@
 from persistencia.conexion import abrir_conexion
-from persistencia.interfaces_dao import IDepartamentoDAO
+from persistencia.interfaces_dao import IProyectoDAO
 
 
-class DepartamentoDAO(IDepartamentoDAO):
-    def insertar(self, departamento):
+class ProyectoDAO(IProyectoDAO):
+    def insertar(self, proyecto):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("INSERT INTO departamento (nombre) VALUES (%s)", (departamento.nombre,))
+            cursor.execute("""
+                INSERT INTO proyecto (nombre, descripcion, fecha_inicio)
+                VALUES (%s, %s, %s)
+            """, (proyecto.nombre, proyecto.descripcion, proyecto.fecha_inicio))
             conexion.commit()
-            departamento.id_departamento = cursor.lastrowid
-            return departamento
+            proyecto.id_proyecto = cursor.lastrowid
+            return proyecto
         except Exception:
             conexion.rollback()
             raise
@@ -18,11 +21,11 @@ class DepartamentoDAO(IDepartamentoDAO):
             cursor.close()
             conexion.close()
 
-    def obtener_por_id(self, id_departamento):
+    def obtener_por_id(self, id_proyecto):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("SELECT id_departamento, nombre, id_gerente FROM departamento WHERE id_departamento=%s", (id_departamento,))
+            cursor.execute("SELECT id_proyecto, nombre, descripcion, fecha_inicio FROM proyecto WHERE id_proyecto=%s", (id_proyecto,))
             fila = cursor.fetchone()
             return self._fila_a_dict(fila) if fila else None
         finally:
@@ -33,17 +36,21 @@ class DepartamentoDAO(IDepartamentoDAO):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("SELECT id_departamento, nombre, id_gerente FROM departamento ORDER BY id_departamento")
+            cursor.execute("SELECT id_proyecto, nombre, descripcion, fecha_inicio FROM proyecto ORDER BY id_proyecto")
             return [self._fila_a_dict(fila) for fila in cursor.fetchall()]
         finally:
             cursor.close()
             conexion.close()
 
-    def actualizar(self, id_departamento, departamento):
+    def actualizar(self, id_proyecto, proyecto):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("UPDATE departamento SET nombre=%s WHERE id_departamento=%s", (departamento.nombre, id_departamento))
+            cursor.execute("""
+                UPDATE proyecto
+                SET nombre=%s, descripcion=%s, fecha_inicio=%s
+                WHERE id_proyecto=%s
+            """, (proyecto.nombre, proyecto.descripcion, proyecto.fecha_inicio, id_proyecto))
             conexion.commit()
             return cursor.rowcount > 0
         except Exception:
@@ -53,11 +60,11 @@ class DepartamentoDAO(IDepartamentoDAO):
             cursor.close()
             conexion.close()
 
-    def eliminar(self, id_departamento):
+    def eliminar(self, id_proyecto):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("DELETE FROM departamento WHERE id_departamento=%s", (id_departamento,))
+            cursor.execute("DELETE FROM proyecto WHERE id_proyecto=%s", (id_proyecto,))
             conexion.commit()
             return cursor.rowcount > 0
         except Exception:
@@ -67,13 +74,16 @@ class DepartamentoDAO(IDepartamentoDAO):
             cursor.close()
             conexion.close()
 
-    def agregar_empleado(self, id_empleado, id_departamento):
+    def asignar_empleado(self, id_proyecto, id_empleado):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("UPDATE empleado SET id_departamento=%s WHERE id_empleado=%s", (id_departamento, id_empleado))
+            cursor.execute("""
+                INSERT INTO empleado_proyecto (id_empleado, id_proyecto)
+                VALUES (%s, %s)
+            """, (id_empleado, id_proyecto))
             conexion.commit()
-            return cursor.rowcount > 0
+            return True
         except Exception:
             conexion.rollback()
             raise
@@ -81,25 +91,11 @@ class DepartamentoDAO(IDepartamentoDAO):
             cursor.close()
             conexion.close()
 
-    def remover_empleado(self, id_empleado):
+    def desasignar_empleado(self, id_proyecto, id_empleado):
         conexion = abrir_conexion()
         cursor = conexion.cursor()
         try:
-            cursor.execute("UPDATE empleado SET id_departamento=NULL WHERE id_empleado=%s", (id_empleado,))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception:
-            conexion.rollback()
-            raise
-        finally:
-            cursor.close()
-            conexion.close()
-
-    def asignar_gerente(self, id_departamento, id_empleado):
-        conexion = abrir_conexion()
-        cursor = conexion.cursor()
-        try:
-            cursor.execute("UPDATE departamento SET id_gerente=%s WHERE id_departamento=%s", (id_empleado, id_departamento))
+            cursor.execute("DELETE FROM empleado_proyecto WHERE id_proyecto=%s AND id_empleado=%s", (id_proyecto, id_empleado))
             conexion.commit()
             return cursor.rowcount > 0
         except Exception:
@@ -111,4 +107,4 @@ class DepartamentoDAO(IDepartamentoDAO):
 
     @staticmethod
     def _fila_a_dict(fila):
-        return {"id_departamento": fila[0], "nombre": fila[1], "id_gerente": fila[2]}
+        return {"id_proyecto": fila[0], "nombre": fila[1], "descripcion": fila[2], "fecha_inicio": fila[3]}

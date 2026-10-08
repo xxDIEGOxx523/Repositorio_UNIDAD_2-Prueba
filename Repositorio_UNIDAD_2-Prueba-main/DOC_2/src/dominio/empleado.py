@@ -1,38 +1,86 @@
-from dominio.empleado import Empleado
+from datetime import date
 
 
-class Proyecto:
-    def __init__(self, nombre, id=None):
-        self.id = id
-        self.nombre = nombre
-        self.empleados_list = []
-
-    def agregar_empleado(self, empleado):
-        if not isinstance(empleado, Empleado):
-            raise TypeError("Solo se pueden asignar objetos Empleado.")
-
-        if empleado in self.empleados_list:
-            return False
-
-        self.empleados_list.append(empleado)
-        return True
-
-    def quitar_empleado(self, empleado):
-        if empleado not in self.empleados_list:
-            return False
-
-        self.empleados_list.remove(empleado)
-        return True
+class Empleado:
+    def __init__(self, nombre, direccion, telefono, correo, fecha_inicio_contrato, salario, id_empleado=None, id_departamento=None):
+        self.id_empleado = id_empleado
+        self.__nombre = nombre
+        self.__direccion = direccion
+        self.__telefono = telefono
+        self.__correo = correo
+        self.__fecha_inicio_contrato = fecha_inicio_contrato
+        self.__salario = salario
+        self.id_departamento = id_departamento
 
     @property
-    def empleados(self):
-        return tuple(self.empleados_list)
+    def nombre(self):
+        return self.__nombre
 
-    def cantidad_empleados(self):
-        return len(self.empleados_list)
+    @nombre.setter
+    def nombre(self, valor):
+        if not valor or not valor.strip():
+            raise ValueError("El nombre no puede estar vacío.")
+        self.__nombre = valor.strip()
 
-    def mostrar_datos(self):
-        return f"{self.nombre} ({self.cantidad_empleados()} empleados)"
+    @property
+    def direccion(self):
+        return self.__direccion
 
-    def __str__(self):
-        return self.mostrar_datos()
+    @direccion.setter
+    def direccion(self, valor):
+        self.__direccion = valor.strip()
+
+    @property
+    def telefono(self):
+        return self.__telefono
+
+    @telefono.setter
+    def telefono(self, valor):
+        self.__telefono = valor.strip()
+
+    @property
+    def correo(self):
+        return self.__correo
+
+    @correo.setter
+    def correo(self, valor):
+        if "@" not in valor:
+            raise ValueError("El correo no es válido.")
+        self.__correo = valor.strip()
+
+    @property
+    def fecha_inicio_contrato(self):
+        return self.__fecha_inicio_contrato
+
+    @fecha_inicio_contrato.setter
+    def fecha_inicio_contrato(self, valor):
+        if not isinstance(valor, date):
+            raise ValueError("La fecha debe ser un objeto date.")
+        self.__fecha_inicio_contrato = valor
+
+    @property
+    def salario(self):
+        return self.__salario
+
+    @salario.setter
+    def salario(self, valor):
+        if valor < 0:
+            raise ValueError("El salario no puede ser negativo.")
+        self.__salario = valor
+
+    def registrar_empleado(self):
+        return True
+
+    def actualizar_datos(self, nombre, direccion, telefono, correo, fecha_inicio_contrato, salario):
+        self.nombre = nombre
+        self.direccion = direccion
+        self.telefono = telefono
+        self.correo = correo
+        self.fecha_inicio_contrato = fecha_inicio_contrato
+        self.salario = salario
+
+    def registrar_horas(self):
+        return True
+
+    def obtener_permisos(self):
+        return []
