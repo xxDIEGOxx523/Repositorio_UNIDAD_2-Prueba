@@ -24,7 +24,9 @@ class TerminalInterface:
         print("6. Listar proyectos")
         print("7. Registrar tiempo")
         print("8. Listar registros de tiempo")
-        print("9. Salir")
+        print("9. Actualizar empleado")
+        print("10. Eliminar empleado")
+        print("11. Salir")
 
     def iniciar(self):
         while True:
@@ -40,8 +42,10 @@ class TerminalInterface:
                     "6": lambda: self._listar(self.proyecto_dao, "PROYECTOS"),
                     "7": self._registrar_tiempo,
                     "8": self._mostrar_listado_tiempos,
+                    "9": self._actualizar_empleado,
+                    "10": self._eliminar_empleado,
                 }
-                if opcion == "9":
+                if opcion == "11":
                     print("Sistema finalizado.")
                     sys.exit()
                 accion = acciones.get(opcion)
@@ -111,7 +115,49 @@ class TerminalInterface:
                 f"Empleado: {registro['empleado']} | Proyecto: {registro['proyecto']} | "
                 f"Horas: {registro['horas']} | Descripción: {registro['descripcion']}"
             )
+    def _actualizar_empleado(self):
+        id_empleado = self._pedir_int("ID del empleado: ")
 
+        actual = self.empleado_dao.obtener_por_id(id_empleado)
+
+        if not actual:
+            print("Empleado no encontrado.")
+            return
+
+        empleado = Empleado(
+            input("Nombre: ").strip(),
+            input("Dirección: ").strip(),
+            input("Teléfono: ").strip(),
+            input("Correo: ").strip(),
+            self._pedir_fecha("Fecha de inicio (YYYY-MM-DD): "),
+            self._pedir_float("Salario: "),
+        )
+
+        confirmar = input("¿Guardar los cambios? (s/n): ").strip().lower()
+
+        if confirmar == "s":
+            actualizado = self.empleado_dao.actualizar(id_empleado, empleado)
+            print("Empleado actualizado." if actualizado else "No se pudo actualizar.")
+        else:
+            print("Actualización cancelada.")
+            
+    def _eliminar_empleado(self):
+        id_empleado = self._pedir_int("ID del empleado: ")
+
+        actual = self.empleado_dao.obtener_por_id(id_empleado)
+
+        if not actual:
+            print("Empleado no encontrado.")
+            return
+
+        confirmar = input("¿Eliminar este empleado? (s/n): ").strip().lower()
+
+        if confirmar == "s":
+            eliminado = self.empleado_dao.eliminar(id_empleado)
+            print("Empleado eliminado." if eliminado else "No se pudo eliminar.")
+        else:
+            print("Operación cancelada.")
+            
     @staticmethod
     def _pedir_int(mensaje):
         while True:
