@@ -1,15 +1,26 @@
+
 from datetime import date
 
 
 class Empleado:
-    def __init__(self, nombre, direccion, telefono, correo, fecha_inicio_contrato, salario, id_empleado=None, id_departamento=None):
+    def __init__(
+        self,
+        nombre,
+        direccion,
+        telefono,
+        correo,
+        fecha_inicio_contrato,
+        salario,
+        id_empleado=None,
+        id_departamento=None,
+    ):
         self.id_empleado = id_empleado
-        self.__nombre = nombre
-        self.__direccion = direccion
-        self.__telefono = telefono
-        self.__correo = correo
-        self.__fecha_inicio_contrato = fecha_inicio_contrato
-        self.__salario = salario
+        self.nombre = nombre
+        self.direccion = direccion
+        self.telefono = telefono
+        self.correo = correo
+        self.fecha_inicio_contrato = fecha_inicio_contrato
+        self.salario = salario
         self.id_departamento = id_departamento
 
     @property
@@ -18,7 +29,7 @@ class Empleado:
 
     @nombre.setter
     def nombre(self, valor):
-        if not valor or not valor.strip():
+        if not isinstance(valor, str) or not valor.strip():
             raise ValueError("El nombre no puede estar vacío.")
         self.__nombre = valor.strip()
 
@@ -28,6 +39,8 @@ class Empleado:
 
     @direccion.setter
     def direccion(self, valor):
+        if not isinstance(valor, str) or not valor.strip():
+            raise ValueError("La dirección no puede estar vacía.")
         self.__direccion = valor.strip()
 
     @property
@@ -36,6 +49,8 @@ class Empleado:
 
     @telefono.setter
     def telefono(self, valor):
+        if not isinstance(valor, str) or not valor.strip():
+            raise ValueError("El teléfono no puede estar vacío.")
         self.__telefono = valor.strip()
 
     @property
@@ -44,7 +59,7 @@ class Empleado:
 
     @correo.setter
     def correo(self, valor):
-        if "@" not in valor:
+        if not isinstance(valor, str) or "@" not in valor:
             raise ValueError("El correo no es válido.")
         self.__correo = valor.strip()
 
@@ -71,7 +86,15 @@ class Empleado:
     def registrar_empleado(self):
         return True
 
-    def actualizar_datos(self, nombre, direccion, telefono, correo, fecha_inicio_contrato, salario):
+    def actualizar_datos(
+        self,
+        nombre,
+        direccion,
+        telefono,
+        correo,
+        fecha_inicio_contrato,
+        salario,
+    ):
         self.nombre = nombre
         self.direccion = direccion
         self.telefono = telefono
@@ -84,3 +107,4 @@ class Empleado:
 
     def obtener_permisos(self):
         return []
+
