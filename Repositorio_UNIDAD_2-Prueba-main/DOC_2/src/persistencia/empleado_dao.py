@@ -152,5 +152,3 @@ class EmpleadoDAO(IEmpleadoDAO):
             "salario": fila[6],
             "id_departamento": fila[7],
         }
-
-        }
