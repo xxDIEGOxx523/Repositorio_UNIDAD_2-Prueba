@@ -65,3 +65,18 @@ CREATE TABLE IF NOT EXISTS registro_tiempo (
         REFERENCES proyecto(id_proyecto)
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS usuario (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    rol VARCHAR(50) NOT NULL DEFAULT 'empleado',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_empleado INT UNIQUE NULL,
+    CONSTRAINT fk_usuario_empleado
+        FOREIGN KEY (id_empleado)
+        REFERENCES empleado(id_empleado)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+) ENGINE=InnoDB;
