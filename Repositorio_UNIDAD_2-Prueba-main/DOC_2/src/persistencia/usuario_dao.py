@@ -1,86 +1,53 @@
 from persistencia.conexion import abrir_conexion
-from persistencia.interfaces_dao import IUsuarioDAO  # Asumiendo que existe o puedes implementarla
+from dominio.usuario import Usuario
 
 
-class UsuarioDAO(IUsuarioDAO):
+class UsuarioDAO:
 
     def insertar(self, usuario):
         conexion = abrir_conexion()
         cursor = None
-
         try:
             cursor = conexion.cursor()
             cursor.execute("""
-                INSERT INTO usuario
-                (username, password_hash, rol, activo, id_empleado)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (
-                usuario.username,
-                usuario.password_hash,
-                usuario.rol,
-                usuario.activo,
-                usuario.id_empleado,
-            ))
-
+                INSERT INTO usuario (username, password_hash, id_empleado)
+                VALUES (%s, %s, %s)
+            """, (usuario.nombre_usuario, usuario.password_hash,
+                  usuario.empleado_id))
             conexion.commit()
-            usuario.id_usuario = cursor.lastrowid
-            return usuario
-
+            usuario.id = cursor.lastrowid
+            return usuario.id
         except Exception:
             conexion.rollback()
             raise
-
         finally:
             if cursor is not None:
                 cursor.close()
             conexion.close()
 
-    def buscar_por_nombre(self, username):
-        conexion = abrir_conexion()
-        cursor = None
-
-        try:
-            cursor = conexion.cursor()
-            cursor.execute(
-                "SELECT * FROM usuario WHERE username = %s",
-                (username,),
-            )
-            fila = cursor.fetchone()
-
-            return self._fila_a_dict(fila) if fila else None
-
-        finally:
-            if cursor is not None:
-                cursor.close()
-            conexion.close()
+    def buscar_por_nombre(self, nombre_usuario):
+        return self._buscar("username", nombre_usuario)
 
     def buscar_por_empleado(self, id_empleado):
+        return self._buscar("id_empleado", id_empleado)
+
+    def _buscar(self, columna, valor):
         conexion = abrir_conexion()
         cursor = None
-
         try:
             cursor = conexion.cursor()
+
             cursor.execute(
-                "SELECT * FROM usuario WHERE id_empleado = %s",
-                (id_empleado,),
+                f"SELECT id_usuario, username, password_hash, id_empleado "
+                f"FROM usuario WHERE {columna} = %s",
+                (valor,),
             )
             fila = cursor.fetchone()
-
-            return self._fila_a_dict(fila) if fila else None
-
+            if fila is None or fila[3] is None:
+                return None
+            return Usuario(nombre_usuario=fila[1], password_hash=fila[2],
+                           empleado_id=fila[3], id=fila[0])
         finally:
             if cursor is not None:
                 cursor.close()
             conexion.close()
-
-    @staticmethod
-    def _fila_a_dict(fila):
-        return {
-            "id_usuario": fila[0],
-            "username": fila[1],
-            "password_hash": fila[2],
-            "rol": fila[3],
-            "activo": fila[4],
-            "fecha_creacion": fila[5],
-            "id_empleado": fila[6],
-        }
